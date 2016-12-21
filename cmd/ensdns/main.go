@@ -1,5 +1,4 @@
-// Copyright 2014 The go-ethereum Authors
-// This file is part of go-ethereum.
+// Copyright 2016 Nick Johnson <arachnid@notdot.net>
 //
 // go-ethereum is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/arachnid/ensdns/contract"
+	"github.com/arachnid/ensdns/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -156,8 +156,8 @@ func (ed *ENSDNS) resolve(question dns.Question) (records []dns.RR, err error) {
 	return records, nil
 }
 
-func serve(addr string) {
-	server := &dns.Server{Addr: addr, Net: "udp", TsigSecret: nil}
+func serve(addr, proto string) {
+	server := &dns.Server{Addr: addr, Net: proto, TsigSecret: nil}
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("DNS server failed: %v", err)
 	}
@@ -177,7 +177,8 @@ func main() {
 	}
 
 	dns.HandleFunc(".", ensdns.Handle)
-	go serve(*listenAddressFlag)
+	go serve(*listenAddressFlag, "tcp")
+	go serve(*listenAddressFlag, "udp")
 
 	log.Printf("Listening on %s", *listenAddressFlag)
 
