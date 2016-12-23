@@ -780,7 +780,7 @@ func (_PublicResolver *PublicResolverTransactorSession) SetContent(node [32]byte
 }
 
 // ResolverABI is the input ABI used to generate the binding from.
-const ResolverABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"content\",\"outputs\":[{\"name\":\"ret\",\"type\":\"bytes32\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"addr\",\"outputs\":[{\"name\":\"ret\",\"type\":\"address\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"},{\"name\":\"qtype\",\"type\":\"uint16\"},{\"name\":\"qclass\",\"type\":\"uint16\"},{\"name\":\"index\",\"type\":\"uint32\"}],\"name\":\"dnsrr\",\"outputs\":[{\"name\":\"rtype\",\"type\":\"uint16\"},{\"name\":\"rclass\",\"type\":\"uint16\"},{\"name\":\"data\",\"type\":\"bytes\"}],\"payable\":false,\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"a\",\"type\":\"address\"}],\"name\":\"AddrChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"ContentChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"qtype\",\"type\":\"uint16\"},{\"indexed\":false,\"name\":\"qclass\",\"type\":\"uint16\"},{\"indexed\":false,\"name\":\"index\",\"type\":\"uint32\"}],\"name\":\"DnsrrChanged\",\"type\":\"event\"}]"
+const ResolverABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"interfaceID\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"dnsrr\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"content\",\"outputs\":[{\"name\":\"ret\",\"type\":\"bytes32\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"addr\",\"outputs\":[{\"name\":\"ret\",\"type\":\"address\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"node\",\"type\":\"bytes32\"},{\"name\":\"rdata\",\"type\":\"bytes\"}],\"name\":\"setDnsrr\",\"outputs\":[],\"payable\":false,\"type\":\"function\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"a\",\"type\":\"address\"}],\"name\":\"AddrChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"hash\",\"type\":\"bytes32\"}],\"name\":\"ContentChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"qtype\",\"type\":\"uint16\"},{\"indexed\":false,\"name\":\"qclass\",\"type\":\"uint16\"},{\"indexed\":false,\"name\":\"index\",\"type\":\"uint32\"}],\"name\":\"DnsrrChanged\",\"type\":\"event\"}]"
 
 // ResolverBin is the compiled bytecode used for deploying new contracts.
 const ResolverBin = `0x`
@@ -977,44 +977,30 @@ func (_Resolver *ResolverCallerSession) Content(node [32]byte) ([32]byte, error)
 	return _Resolver.Contract.Content(&_Resolver.CallOpts, node)
 }
 
-// Dnsrr is a free data retrieval call binding the contract method 0xfcca1f4e.
+// Dnsrr is a free data retrieval call binding the contract method 0x126a710e.
 //
-// Solidity: function dnsrr(node bytes32, qtype uint16, qclass uint16, index uint32) constant returns(rtype uint16, rclass uint16, data bytes)
-func (_Resolver *ResolverCaller) Dnsrr(opts *bind.CallOpts, node [32]byte, qtype uint16, qclass uint16, index uint32) (struct {
-	Rtype  uint16
-	Rclass uint16
-	Data   []byte
-}, error) {
-	ret := new(struct {
-		Rtype  uint16
-		Rclass uint16
-		Data   []byte
-	})
-	out := ret
-	err := _Resolver.contract.Call(opts, out, "dnsrr", node, qtype, qclass, index)
-	return *ret, err
+// Solidity: function dnsrr(node bytes32) constant returns(bytes)
+func (_Resolver *ResolverCaller) Dnsrr(opts *bind.CallOpts, node [32]byte) ([]byte, error) {
+	var (
+		ret0 = new([]byte)
+	)
+	out := ret0
+	err := _Resolver.contract.Call(opts, out, "dnsrr", node)
+	return *ret0, err
 }
 
-// Dnsrr is a free data retrieval call binding the contract method 0xfcca1f4e.
+// Dnsrr is a free data retrieval call binding the contract method 0x126a710e.
 //
-// Solidity: function dnsrr(node bytes32, qtype uint16, qclass uint16, index uint32) constant returns(rtype uint16, rclass uint16, data bytes)
-func (_Resolver *ResolverSession) Dnsrr(node [32]byte, qtype uint16, qclass uint16, index uint32) (struct {
-	Rtype  uint16
-	Rclass uint16
-	Data   []byte
-}, error) {
-	return _Resolver.Contract.Dnsrr(&_Resolver.CallOpts, node, qtype, qclass, index)
+// Solidity: function dnsrr(node bytes32) constant returns(bytes)
+func (_Resolver *ResolverSession) Dnsrr(node [32]byte) ([]byte, error) {
+	return _Resolver.Contract.Dnsrr(&_Resolver.CallOpts, node)
 }
 
-// Dnsrr is a free data retrieval call binding the contract method 0xfcca1f4e.
+// Dnsrr is a free data retrieval call binding the contract method 0x126a710e.
 //
-// Solidity: function dnsrr(node bytes32, qtype uint16, qclass uint16, index uint32) constant returns(rtype uint16, rclass uint16, data bytes)
-func (_Resolver *ResolverCallerSession) Dnsrr(node [32]byte, qtype uint16, qclass uint16, index uint32) (struct {
-	Rtype  uint16
-	Rclass uint16
-	Data   []byte
-}, error) {
-	return _Resolver.Contract.Dnsrr(&_Resolver.CallOpts, node, qtype, qclass, index)
+// Solidity: function dnsrr(node bytes32) constant returns(bytes)
+func (_Resolver *ResolverCallerSession) Dnsrr(node [32]byte) ([]byte, error) {
+	return _Resolver.Contract.Dnsrr(&_Resolver.CallOpts, node)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -1041,4 +1027,25 @@ func (_Resolver *ResolverSession) SupportsInterface(interfaceID [4]byte) (bool, 
 // Solidity: function supportsInterface(interfaceID bytes4) constant returns(bool)
 func (_Resolver *ResolverCallerSession) SupportsInterface(interfaceID [4]byte) (bool, error) {
 	return _Resolver.Contract.SupportsInterface(&_Resolver.CallOpts, interfaceID)
+}
+
+// SetDnsrr is a paid mutator transaction binding the contract method 0x76196c88.
+//
+// Solidity: function setDnsrr(node bytes32, rdata bytes) returns()
+func (_Resolver *ResolverTransactor) SetDnsrr(opts *bind.TransactOpts, node [32]byte, rdata []byte) (*types.Transaction, error) {
+	return _Resolver.contract.Transact(opts, "setDnsrr", node, rdata)
+}
+
+// SetDnsrr is a paid mutator transaction binding the contract method 0x76196c88.
+//
+// Solidity: function setDnsrr(node bytes32, rdata bytes) returns()
+func (_Resolver *ResolverSession) SetDnsrr(node [32]byte, rdata []byte) (*types.Transaction, error) {
+	return _Resolver.Contract.SetDnsrr(&_Resolver.TransactOpts, node, rdata)
+}
+
+// SetDnsrr is a paid mutator transaction binding the contract method 0x76196c88.
+//
+// Solidity: function setDnsrr(node bytes32, rdata bytes) returns()
+func (_Resolver *ResolverTransactorSession) SetDnsrr(node [32]byte, rdata []byte) (*types.Transaction, error) {
+	return _Resolver.Contract.SetDnsrr(&_Resolver.TransactOpts, node, rdata)
 }
