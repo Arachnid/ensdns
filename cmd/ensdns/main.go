@@ -315,6 +315,7 @@ func (z *Zone) Resolve(question dns.Question) (rrs []dns.RR, err error) {
 }
 
 func (ed *ENSDNS) Handle(w dns.ResponseWriter, r *dns.Msg) {
+	log.Printf("Received query: %v", r)
 	m := new(dns.Msg)
 	m.SetReply(r)
 
