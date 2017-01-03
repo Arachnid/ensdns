@@ -33,6 +33,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/miekg/dns"
 )
 
@@ -47,6 +48,7 @@ var (
 
 	serveFlagSet		= flag.NewFlagSet("serve", flag.ExitOnError)
 	listenAddressFlag   = serveFlagSet.String("address", ":53", "Local address and port to serve on")
+	cacheSizeFlag       = serveFlagSet.Int("cachesize", 65536, "Maximum number of zones to cache")
 
 	rootServers = []string{
 		"a.root-servers.net",
@@ -205,32 +207,72 @@ func upload(client *ethclient.Client, args []string) {
 	}
 }
 
-type ENSDNS struct {
-	client *ethclient.Client
+type nsCacheKey string
+
+type nsCacheEntry struct {
+	expires time.Time
+	registry common.Address
+	root string
 }
 
-func (ed *ENSDNS) getZone(name string) (*Zone, error) {
+type zoneCacheKey struct {
+	registryAddress common.Address
+	name string
+}
+
+type zoneCacheEntry struct {
+	expires time.Time
+	value *Zone
+}
+
+type ENSDNS struct {
+	client *ethclient.Client
+	cache *lru.ARCCache
+}
+
+func (ed *ENSDNS) getRegistryAddress(name string) (common.Address, string, error) {
+	// First, check the cache
+	if entry, ok := ed.cache.Get(nsCacheKey(name)); ok && time.Now().Before(entry.(nsCacheEntry).expires) {
+		return entry.(nsCacheEntry).registry, entry.(nsCacheEntry).root, nil
+	}
+
 	client := &dns.Client{
 		ReadTimeout: 5 * time.Second,
 	}
 
 	ns, err := utils.FindNS(client, rootServers, name, *nsDomainFlag)
 	if err != nil {
-		return nil, err
+		return common.Address{}, "", err
 	}
 
 	parts := strings.Split(ns.Ns, ".")
 	if len(parts[0]) != 40 {
-		return nil, fmt.Errorf("SOA nameserver name '%s' does not start with a 40 character hex address", ns.Ns)
+		return common.Address{}, "", fmt.Errorf("SOA nameserver name '%s' does not start with a 40 character hex address", ns.Ns)
 	}
 
-	registryAddress := common.HexToAddress(parts[0])
+	registryAddress := common.HexToAddress(parts[0])	
+	ed.cache.Add(nsCacheKey(name), nsCacheEntry{time.Now().Add(time.Duration(ns.Hdr.Ttl) * time.Second), registryAddress, ns.Hdr.Name})
+	return registryAddress, ns.Hdr.Name, nil
+}
+
+func (ed *ENSDNS) getZone(name string) (*Zone, error) {
+	registryAddress, root, err := ed.getRegistryAddress(name)
+	if err != nil {
+		return nil, err
+	}
+
+	// First, check the cache
+	cacheKey := zoneCacheKey{registryAddress, name}
+	if entry, ok := ed.cache.Get(cacheKey); ok && time.Now().Before(entry.(zoneCacheEntry).expires) {
+		return entry.(zoneCacheEntry).value, nil
+	}
+
 	registry, err := ens.New(ed.client, registryAddress, bind.TransactOpts{})
 	if err != nil {
 		return nil, fmt.Errorf("Error constructing ENS instance: %v", err)
 	}
 
-	resolver, err := registry.GetResolver(ns.Hdr.Name)
+	resolver, err := registry.GetResolver(root)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting resolver: %s", err)
 	}
@@ -240,11 +282,14 @@ func (ed *ENSDNS) getZone(name string) (*Zone, error) {
 		return nil, fmt.Errorf("Error getting records from resolver: %s", err)
 	}
 
-	return NewZone(rrs), nil
+	zone := NewZone(rrs)
+	ed.cache.Add(cacheKey, zoneCacheEntry{time.Now().Add(time.Duration(zone.soa.Refresh) * time.Second), zone})
+	return zone, nil
 }
 
 type Zone struct {
 	rrs []dns.RR
+	soa *dns.SOA
 	subdomains map[string]*Zone
 }
 
@@ -254,6 +299,10 @@ func NewZone(rrs []dns.RR) *Zone {
 	}
 
 	for _, rr := range rrs {
+		if rr, ok := rr.(*dns.SOA); ok {
+			root.soa = rr
+		}
+
 		labels := strings.Split(rr.Header().Name, ".")
 		z := root
 		for i := len(labels) - 1; i >= 0; i-- {
@@ -356,8 +405,15 @@ func serve(client *ethclient.Client, args []string) {
 		os.Exit(1)
 	}
 
+	arc, err := lru.NewARC(*cacheSizeFlag)
+	if err != nil {
+		fmt.Printf("Error creating ARC cache: %s", err)
+		os.Exit(1)
+	}
+
 	ensdns := &ENSDNS{
 		client: client,
+		cache: arc,
 	}
 	dns.HandleFunc(".", ensdns.Handle)
 
