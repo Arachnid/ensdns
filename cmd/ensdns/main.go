@@ -38,7 +38,7 @@ import (
 )
 
 var (
-	ethapiFlag          = flag.String("ethapi", "ws://localhost:8546", "Path to connect to Ethereum node on")
+	ethapiFlag          = flag.String("ethapi", "http://localhost:8545", "Path to connect to Ethereum node on")
 	nsDomainFlag        = flag.String("nsdomain", ".ens.domains.", "Domain name for this ENS server")
 
 	uploadFlagSet       = flag.NewFlagSet("upload", flag.ExitOnError)
