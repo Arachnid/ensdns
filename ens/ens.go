@@ -110,21 +110,6 @@ func (res *Resolver) GetRRs() (rrs []dns.RR, err error) {
         rrs = append(rrs, r)
     }
     return rrs, nil
-/*
-        hexdata := hex.EncodeToString(response.Data)
-
-        records = append(records, &dns.RFC3597{
-            Hdr: dns.RR_Header{
-                Name:   question.Name,
-                Rrtype: response.Rtype,
-                Class:  response.Rclass,
-                Ttl:    uint32(ttl),
-            },
-            Rdata: hexdata,
-        })
-    }
-
-    return records, nil*/
 }
 
 func packRRs(rrs []dns.RR) (rdata []byte, err error) {
