@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/big"
 	"os"
 	"strings"
 	"time"
@@ -188,6 +189,7 @@ func upload(client *ethclient.Client, args []string) {
 	txopts := bind.TransactOpts{
 		From: account.Address,
 		Signer: (Signer{accman}).Sign,
+		GasLimit: big.NewInt(2000000),
 	}
 
 	registry, err := ens.New(client, registryAddress, txopts)
