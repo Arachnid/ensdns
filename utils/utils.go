@@ -17,6 +17,7 @@ package utils
 
 import (
     "errors"
+    "fmt"
     "net"
     "strings"
 
@@ -35,8 +36,11 @@ func FindNS(client *dns.Client, servers []string, name, nssuffix string) (*dns.N
         if err, ok := err.(net.Error); ok && err.Timeout() {
             continue
         }
-        if err != nil || (r != nil && r.Rcode != dns.RcodeSuccess) {
+        if err != nil {
             return nil, err
+        }
+        if r == nil || r.Rcode != dns.RcodeSuccess {
+            return nil, fmt.Errorf("Got nil or error response from NS query: %v", r)
         }
 
         subservers := make([]string, 0)
