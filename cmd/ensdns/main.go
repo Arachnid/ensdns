@@ -99,7 +99,7 @@ type Signer struct {
 }
 
 func (sig Signer) Sign(signer types.Signer, address common.Address, tx *types.Transaction) (*types.Transaction, error) {
-	signature, err := sig.accman.SignEthereum(address, signer.Hash(tx).Bytes())
+	signature, err := sig.accman.Sign(address, signer.Hash(tx).Bytes())
 	if err != nil {
 		return nil, err
 	}
