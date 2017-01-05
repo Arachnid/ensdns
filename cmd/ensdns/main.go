@@ -305,7 +305,7 @@ func NewZone(rrs []dns.RR) *Zone {
 			root.soa = rr
 		}
 
-		labels := strings.Split(rr.Header().Name, ".")
+		labels := strings.Split(strings.ToLower(rr.Header().Name), ".")
 		z := root
 		for i := len(labels) - 1; i >= 0; i-- {
 			if len(labels[i]) == 0 {
@@ -329,7 +329,7 @@ func NewZone(rrs []dns.RR) *Zone {
 }
 
 func (z *Zone) findSubzone(question dns.Question) (rrs []dns.RR) {
-	labels := strings.Split(question.Name, ".")
+	labels := strings.Split(strings.ToLower(question.Name), ".")
 	zone := z
 	for i := len(labels) - 1; i >= 0; i-- {
 		if len(labels[i]) == 0 {
