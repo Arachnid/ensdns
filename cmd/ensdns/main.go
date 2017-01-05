@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -411,6 +412,11 @@ func serve(client *ethclient.Client, args []string) {
 	if err != nil {
 		fmt.Printf("Error creating ARC cache: %s", err)
 		os.Exit(1)
+	}
+
+	// Randomly shuffle the root server list on startup
+	for i, j := range rand.Perm(len(rootServers)) {
+		rootServers[i], rootServers[j] = rootServers[j], rootServers[i]
 	}
 
 	ensdns := &ENSDNS{
